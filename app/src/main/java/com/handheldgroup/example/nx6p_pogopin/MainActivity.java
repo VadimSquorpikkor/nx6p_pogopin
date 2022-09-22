@@ -16,7 +16,7 @@ import com.techinfo.devicemanager.IDeviceControlInterface;
 
 import javax.security.auth.login.LoginException;
 
-/**ЭТО РАБОТАЕТ!!!*/
+/**ЭТО РАБОТАЕТ!!! только с новыми X6 (которые на 11 Android) и с новой головой*/
 public class MainActivity extends AppCompatActivity {
     private final String TAG = "Demo";
     private static final int BYTE_ARRAY_MAX_SIZE = 4096;
@@ -54,15 +54,15 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 // Write a value to enable/disable power pins
-//                mDeviceManagerService.writeNode("/sys/class/ext_dev/function/ext_dev_3v3_enable",  "1");
-                mDeviceManagerService.writeNode("/sys/class/ext_dev/function/ext_dev_5v_enable", "1");//вкл 5 в
+//                mDeviceManagerService.writeNode("/sys/class/ext_dev/function/ext_dev_3v3_enable",  "0");
+                mDeviceManagerService.writeNode("/sys/class/ext_dev/function/ext_dev_5v_enable", "1");//вкл 5 в. не включает мгновенно, если сразу прочитать, выдаст старое значение
 //                mDeviceManagerService.writeNode("/sys/class/ext_dev/function/ext_dev_5v_enable", "0");//выкл 5 в
 
                 // Read current state of a power pin
                 String value = mDeviceManagerService.readNode("/sys/class/ext_dev/function/ext_dev_3v3_enable");
-//                String value2 = mDeviceManagerService.readNode("/sys/class/ext_dev/function/ext_dev_5v_enable");
+                String value2 = mDeviceManagerService.readNode("/sys/class/ext_dev/function/ext_dev_5v_enable");
 //
-//                Log.e("tag", value+" "+value2);
+                Log.e("tag", value+" "+value2);
 
                 // Open the serial port with 115200 baud
                 mPogoSerialFd = mDeviceManagerService.openSerial("/dev/ttyHSL1", 115200);

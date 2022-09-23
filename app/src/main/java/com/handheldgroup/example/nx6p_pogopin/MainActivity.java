@@ -14,9 +14,14 @@ import android.widget.TextView;
 
 import com.techinfo.devicemanager.IDeviceControlInterface;
 
+import java.util.Arrays;
+
 import javax.security.auth.login.LoginException;
 
-/**ЭТО РАБОТАЕТ!!! только с новыми X6 (которые на 11 Android) и с новой головой*/
+/**ЭТО РАБОТАЕТ!!! только с новыми X6 (которые на 11 Android) и с новой головой
+ *
+ * Работает: NautizX6->Boi5->BTDU->BDKG-11M на запрос "1 11" блок отвечает (запрос и ответ выводится в LogCat)
+ * */
 public class MainActivity extends AppCompatActivity {
     private final String TAG = "Demo";
     private static final int BYTE_ARRAY_MAX_SIZE = 4096;
@@ -54,33 +59,37 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 // Write a value to enable/disable power pins
-//                mDeviceManagerService.writeNode("/sys/class/ext_dev/function/ext_dev_3v3_enable",  "0");
+                mDeviceManagerService.writeNode("/sys/class/ext_dev/function/ext_dev_3v3_enable",  "0");
                 mDeviceManagerService.writeNode("/sys/class/ext_dev/function/ext_dev_5v_enable", "1");//вкл 5 в. не включает мгновенно, если сразу прочитать, выдаст старое значение
-//                mDeviceManagerService.writeNode("/sys/class/ext_dev/function/ext_dev_5v_enable", "0");//выкл 5 в
 
                 // Read current state of a power pin
                 String value = mDeviceManagerService.readNode("/sys/class/ext_dev/function/ext_dev_3v3_enable");
                 String value2 = mDeviceManagerService.readNode("/sys/class/ext_dev/function/ext_dev_5v_enable");
-//
                 Log.e("tag", value+" "+value2);
 
-                // Open the serial port with 115200 baud
-                mPogoSerialFd = mDeviceManagerService.openSerial("/dev/ttyHSL1", 115200);
+                // Open the serial port with 230400 baud
+                mPogoSerialFd = mDeviceManagerService.openSerial("/dev/ttyHSL1", 230400);
 
                 // Write data to the serial port
-                byte[] data = new byte[]{0x01, 0x02};
+                byte[] data = new byte[]{0x01, 0x11, 0x2c, (byte)0xc0};
+                Log.e(TAG, ">> "+Arrays.toString(data));
                 mDeviceManagerService.writeSerial(mPogoSerialFd, data, data.length);
 
                 // Read data from the serial port (non blocking)
                 byte[] buffer = new byte[BYTE_ARRAY_MAX_SIZE];
                 int size = mDeviceManagerService.readSerial(mPogoSerialFd, buffer, BYTE_ARRAY_MAX_SIZE);
 
+                byte[] answer = new byte[size];
+                for (int i = 0; i < size; i++) {
+                    answer[i] = buffer[i];
+                }
+                Log.e(TAG, "<< "+Arrays.toString(answer));
+
                 // Close the serial port
-                mDeviceManagerService.closeSerial(mPogoSerialFd);
+//                mDeviceManagerService.closeSerial(mPogoSerialFd);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
-
         }
 
         @Override
@@ -93,5 +102,4 @@ public class MainActivity extends AppCompatActivity {
     private void initService() {
         bindService(mDevicePogoIntent, mDeviceConnection, Context.BIND_AUTO_CREATE);
     }
-
 }
